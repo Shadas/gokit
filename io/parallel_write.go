@@ -4,6 +4,16 @@ import (
 	"io"
 )
 
+func ParallelMultiWrite(src io.Reader, dest []io.Writer) (err error) {
+	buf, err := io.ReadAll(src)
+	if err != nil {
+		return err
+	}
+	mw := io.MultiWriter(dest...)
+	_, err = mw.Write(buf)
+	return err
+}
+
 func ParallelWrite(src io.Reader, dest [2]io.Writer) (err error) {
 	errChan := make(chan error, 1)
 
