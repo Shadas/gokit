@@ -45,6 +45,9 @@ func copyRecursive(origin, target reflect.Value) {
 		target.Set(copyValue)
 	case reflect.Struct:
 		for i := 0; i < origin.NumField(); i++ {
+			if !origin.Type().Field(i).IsExported() {
+				continue
+			}
 			copyRecursive(origin.Field(i), target.Field(i))
 		}
 	case reflect.Slice:

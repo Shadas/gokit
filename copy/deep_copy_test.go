@@ -6,6 +6,62 @@ import (
 	"unsafe"
 )
 
+func TestDeepCopyPointerToStruct(t *testing.T) {
+	type Foo struct {
+		Bar int
+	}
+	f := &Foo{Bar: 42}
+	cpy := DeepCopy(f)
+	if f == cpy {
+		t.Error("f, cpy should not be the same pointer")
+	}
+	if !reflect.DeepEqual(f, cpy) {
+		t.Error("the value of f and cpy should be the same")
+	}
+}
+
+func TestUnexportedFields(t *testing.T) {
+	u := &Unexported{
+		A:  "A",
+		B:  123,
+		aa: "aa",
+		bb: 456,
+		cc: []int{1, 2, 3, 4},
+		dd: map[string]string{"xx": "yy"},
+	}
+	cpy := DeepCopy(u).(*Unexported)
+	if cpy == u {
+		t.Error("u, cpy should not be the same pointer")
+	}
+	if u.A != cpy.A {
+		t.Error("Unexported.A copy failed")
+	}
+	if u.B != cpy.B {
+		t.Error("Unexported.B copy failed")
+	}
+	if cpy.aa != "" {
+		t.Error("Unexported.aa shouldn't be set")
+	}
+	if cpy.bb != 0 {
+		t.Error("Unexported.bb shouldn't be set")
+	}
+	if cpy.cc != nil {
+		t.Error("Unexported.cc shouldn't be set")
+	}
+	if cpy.dd != nil {
+		t.Error("Unexported.dd shouldn't be set")
+	}
+}
+
+type Unexported struct {
+	A  string
+	B  int
+	aa string
+	bb int
+	cc []int
+	dd map[string]string
+}
+
 func TestDeepCopySlice(t *testing.T) {
 	// []string
 	strings := []string{"A", "B", "C"}
