@@ -3,8 +3,65 @@ package copy
 import (
 	"reflect"
 	"testing"
+	"time"
 	"unsafe"
 )
+
+func TestDeepCopyTime(t *testing.T) {
+	tests := []struct {
+		Y    int
+		M    time.Month
+		D    int
+		h    int
+		m    int
+		s    int
+		nsec int
+		TZ   string
+	}{
+		{2016, time.July, 4, 23, 11, 33, 3000, "America/New_York"},
+		{2015, time.October, 31, 9, 44, 23, 45935, "UTC"},
+		{2014, time.May, 5, 22, 01, 50, 219300, "Europe/Prague"},
+	}
+
+	for i, test := range tests {
+		l, err := time.LoadLocation(test.TZ)
+		if err != nil {
+			t.Errorf("case %d: unexpected err: %s", i, err)
+			continue
+		}
+		var x T
+		x.Time = time.Date(test.Y, test.M, test.D, test.h, test.m, test.s, test.nsec, l)
+		cpy := DeepCopy(x).(T)
+		if &cpy == &x {
+			t.Error("time cpy should has different pointer")
+			continue
+		}
+		if cpy.UnixNano() != x.UnixNano() {
+			t.Error("time cpy has different unix nano")
+			continue
+		}
+		if cpy.Location().String() != x.Location().String() {
+			t.Error("time cpy has different location")
+			continue
+		}
+	}
+
+	var tn = time.Now()
+	tcpy := DeepCopy(tn).(time.Time)
+	if &tcpy == &tn {
+		t.Error("time cpy should has different pointer")
+	}
+	if tcpy.UnixNano() != tn.UnixNano() {
+		t.Error("time cpy has different unix nano")
+	}
+	if tcpy.Location().String() != tn.Location().String() {
+		t.Error("time cpy has different location")
+	}
+}
+
+type T struct {
+	time.Time
+}
 
 func TestDeepCopyPointerToStruct(t *testing.T) {
 	type Foo struct {

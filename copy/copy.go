@@ -4,6 +4,7 @@ package copy
 
 import (
 	"reflect"
+	"time"
 )
 
 func DeepCopy(src interface{}) interface{} {
@@ -44,6 +45,10 @@ func copyRecursive(origin, target reflect.Value) {
 		copyRecursive(originValue, copyValue)
 		target.Set(copyValue)
 	case reflect.Struct:
+		if t, ok := origin.Interface().(time.Time); ok {
+			target.Set(reflect.ValueOf(t))
+			return
+		}
 		for i := 0; i < origin.NumField(); i++ {
 			if !origin.Type().Field(i).IsExported() {
 				continue
