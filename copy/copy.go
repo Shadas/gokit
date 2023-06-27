@@ -2,7 +2,9 @@ package copy
 
 // learn with https://github.com/mohae/deepcopy/blob/master/deepcopy.go
 
-import "reflect"
+import (
+	"reflect"
+)
 
 func DeepCopy(src interface{}) interface{} {
 	if src == nil {
@@ -16,7 +18,7 @@ func DeepCopy(src interface{}) interface{} {
 
 func copyRecursive(origin, target reflect.Value) {
 	if origin.CanInterface() {
-		if copier, ok := origin.Interface().(interface{ DeepCopy() error }); ok {
+		if copier, ok := origin.Interface().(interface{ DeepCopy() interface{} }); ok {
 			target.Set(reflect.ValueOf(copier.DeepCopy()))
 			return
 		}

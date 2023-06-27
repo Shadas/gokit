@@ -122,3 +122,30 @@ func TestDeepCopySlice(t *testing.T) {
 		}
 	}
 }
+
+func TestDeepCopyInterfaceUse(t *testing.T) {
+	i := &I{A: "self value"}
+	cpyI := DeepCopy(i).(*I)
+	if cpyI.A != customSpecificValue {
+		t.Error("DeepCopy interface failed to use in DeepCopy function")
+	}
+	ni := &NestI{I: &I{A: "self value"}}
+	cpyNI := DeepCopy(ni).(*NestI)
+	if cpyNI.I.A != customSpecificValue {
+		t.Error("nested: DeepCopy interface failed to use in DeepCopy function")
+	}
+}
+
+var customSpecificValue = "custom copy value"
+
+type I struct {
+	A string
+}
+
+func (i *I) DeepCopy() interface{} {
+	return &I{A: customSpecificValue}
+}
+
+type NestI struct {
+	I *I
+}
